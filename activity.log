@@ -1,0 +1,9 @@
+[2025-08-19 15:48:43] uid=- action=login_failed detail={"username":"admin","ip":"127.0.0.1","ua":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/139.0.0.0 Safari\/537.36 Edg\/139.0.0.0","reason":"invalid_credentials"}
+[2025-08-19 15:48:52] uid=1 action=login_success detail={"username":"admin","ip":"127.0.0.1","ua":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/139.0.0.0 Safari\/537.36 Edg\/139.0.0.0"}
+[2025-08-22 14:37:03] uid=- action=login_failed detail={"username":"ิboss","ip":"127.0.0.1","ua":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/139.0.0.0 Safari\/537.36 Edg\/139.0.0.0","reason":"invalid_credentials"}
+[2025-08-22 14:39:23] uid=4 action=login_success detail={"username":"warawut","ip":"127.0.0.1","ua":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/139.0.0.0 Safari\/537.36 Edg\/139.0.0.0"}
+[2025-08-22 14:41:00] uid=4 action=logout detail=User logged out
+[2025-08-22 14:41:26] uid=- action=login_failed detail={"username":"Phol","ip":"127.0.0.1","ua":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/139.0.0.0 Safari\/537.36 Edg\/139.0.0.0","reason":"invalid_credentials"}
+[2025-08-22 14:41:45] uid=- action=login_failed detail={"username":"Phol","ip":"127.0.0.1","ua":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/139.0.0.0 Safari\/537.36 Edg\/139.0.0.0","reason":"invalid_credentials"}
+[2025-08-22 14:41:53] uid=3 action=login_success detail={"username":"Phol","ip":"127.0.0.1","ua":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/139.0.0.0 Safari\/537.36 Edg\/139.0.0.0"}
+[2025-08-22 14:46:00] uid=3 action=logout detail=User logged out

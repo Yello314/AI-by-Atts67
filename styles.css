@@ -1,0 +1,621 @@
+/* ================================
+   Modern Exam System — Unified UI
+   v2.1  (Air Force ready)
+   -------------------------------
+   • พื้นหลัง gradient + glass
+   • ปุ่ม gradient + ripple
+   • พิมพ์เฉพาะข้อสอบ (#printArea)
+   • หน้าแรก margin-top ต่ำ, หน้าอื่นปกติ
+   ================================ */
+
+/* ========== Design Tokens ========== */
+:root{
+  /* Brand */
+  --primary:#6d28d9;              /* Violet-700 */
+  --primary-dark:#5b21b6;
+  --primary-light:#a78bfa;
+  --primary-rgb:109,40,217;
+
+  --secondary:#f97316;            /* Orange-500 */
+  --secondary-dark:#ea580c;
+  --secondary-light:#fdba74;
+  --secondary-rgb:249,115,22;
+
+  --accent:#06b6d4;               /* Cyan-500 */
+  --accent-dark:#0891b2;
+  --accent-light:#67e8f9;
+  --accent-rgb:6,182,212;
+
+  /* Grays */
+  --gray-50:#f9fafb; --gray-100:#f3f4f6; --gray-200:#e5e7eb; --gray-300:#d1d5db;
+  --gray-400:#9ca3af; --gray-500:#6b7280; --gray-600:#4b5563; --gray-700:#374151;
+  --gray-800:#1f2937; --gray-900:#111827;
+
+  /* Base */
+  --bg-primary:#fff;
+  --bg-secondary:#f8fafc;
+  --bg-tertiary:#eef2ff;
+  --text-primary:#0f172a;
+  --text-secondary:#475569;
+  --text-muted:#94a3b8;
+  --border:#e2e8f0;
+
+  /* States */
+  --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --info:#3b82f6;
+
+  /* Effects */
+  --shadow:0 4px 6px -1px rgb(0 0 0/.1),0 2px 4px -2px rgb(0 0 0/.1);
+  --shadow-lg:0 20px 25px -5px rgb(0 0 0/.1),0 8px 10px -6px rgb(0 0 0/.1);
+  --shadow-2xl:0 25px 50px -12px rgb(0 0 0/.24);
+  --radius:12px; --radius-lg:18px; --radius-xl:24px; --radius-full:9999px;
+
+  /* Glass */
+  --glass-bg:rgba(255,255,255,.72);
+  --glass-border:rgba(255,255,255,.22);
+  --glass-shadow:0 10px 30px rgba(17,24,39,.12);
+  --backdrop-blur:12px;
+
+  /* Gradients */
+  --brand-gradient:linear-gradient(135deg,var(--primary),var(--secondary) 55%,var(--accent));
+  --brand-gradient-soft:linear-gradient(
+    135deg,
+    color-mix(in oklab,var(--primary) 14%,transparent),
+    color-mix(in oklab,var(--secondary) 14%,transparent) 50%,
+    color-mix(in oklab,var(--accent) 14%,transparent)
+  );
+
+  /* Motion */
+  --t-fast:150ms cubic-bezier(.4,0,.2,1);
+  --t:300ms cubic-bezier(.4,0,.2,1);
+}
+
+/* Optional theme: Air Force (ใส่ class="theme-airforce" บน <body>) */
+.theme-airforce{
+  --primary:#1d4ed8; --primary-dark:#1e40af; --primary-light:#93c5fd; --primary-rgb:29,78,216;
+  --secondary:#38bdf8; --secondary-dark:#0ea5e9; --secondary-light:#bae6fd; --secondary-rgb:56,189,248;
+  --accent:#f59e0b; --accent-dark:#d97706; --accent-light:#fde68a; --accent-rgb:245,158,11;
+  --brand-gradient:linear-gradient(135deg,var(--primary),var(--secondary) 55%,var(--accent));
+  --brand-gradient-soft:linear-gradient(
+    135deg,
+    color-mix(in oklab,var(--primary) 14%,transparent),
+    color-mix(in oklab,var(--secondary) 14%,transparent) 50%,
+    color-mix(in oklab,var(--accent) 14%,transparent)
+  );
+}
+
+/* Dark mode */
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg-primary:#0f172a; --bg-secondary:#0b1220; --bg-tertiary:#111827;
+    --text-primary:#e5e7eb; --text-secondary:#cbd5e1; --text-muted:#94a3b8; --border:#1f2937;
+    --glass-bg:rgba(15,23,42,.6); --glass-border:rgba(255,255,255,.08);
+    --glass-shadow:0 14px 40px rgba(0,0,0,.45);
+  }
+}
+
+/* ========== Base & Typography ========== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{
+  font-family:'Prompt','Kanit','Inter','Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px; line-height:1.6; color:var(--text-primary); background:var(--bg-secondary);
+  min-height:100vh; overflow-x:hidden; position:relative;
+}
+/* animated soft background */
+body::before{
+  content:""; position:fixed; inset:0; z-index:-2; background:var(--brand-gradient-soft);
+  animation:gradShift 16s ease-in-out infinite;
+}
+body::after{
+  content:""; position:fixed; width:420px;height:420px; top:-210px; right:-210px;
+  background:radial-gradient(circle,var(--primary-light),transparent);
+  opacity:.16; border-radius:50%; z-index:-1; animation:orb 20s ease-in-out infinite;
+}
+@keyframes gradShift{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.06)}}
+@keyframes orb{0%,100%{transform:translate(0,0)}50%{transform:translate(-100px,120px)}}
+
+/* ========== Layout ========== */
+.container{max-width:1200px;margin:0 auto;padding:2rem}
+@media (max-width:768px){.container{padding:1rem}}
+
+.card{
+  background:var(--glass-bg); border:1px solid var(--glass-border);
+  border-radius:var(--radius-xl); box-shadow:var(--glass-shadow);
+  backdrop-filter:blur(var(--backdrop-blur)); -webkit-backdrop-filter:blur(var(--backdrop-blur));
+  padding:2rem; margin-bottom:2rem; overflow:hidden; position:relative; transition:transform var(--t), box-shadow var(--t);
+}
+.card::before{
+  content:""; position:absolute; top:0; left:0; right:0; height:4px;
+  background:linear-gradient(90deg,var(--primary),var(--secondary),var(--accent));
+  transform:translateX(-100%); animation:shimmer 3s ease-in-out infinite;
+}
+.card:hover{transform:translateY(-4px); box-shadow:var(--shadow-2xl)}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+.card-header{
+  margin:-2rem -2rem 1.25rem; padding:1.25rem 1.5rem; background:var(--brand-gradient-soft);
+  border-bottom:1px solid var(--border); border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+}
+.card-title{font-size:1.5rem; font-weight:700; display:flex; gap:.5rem; align-items:center}
+
+/* user header (top bar) */
+.user-header{
+  background:var(--brand-gradient); color:#fff; padding:1.5rem 2rem;
+  margin:-2rem -2rem 2rem; border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+  display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; box-shadow:var(--shadow-lg);
+}
+.user-header .user-info{display:flex; align-items:center; gap:1rem; font-weight:600}
+.user-header .user-info .badge{background:rgba(255,255,255,.22); padding:.35rem .75rem; border-radius:999px; font-size:.75rem}
+.user-header .buttons{display:flex; gap:.6rem; flex-wrap:wrap}
+.user-header a{
+  color:#fff; text-decoration:none; font-weight:600; font-size:.85rem; letter-spacing:.02em;
+  background:rgba(255,255,255,.2); padding:.55rem 1rem; border-radius:10px; backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.3); transition:transform var(--t-fast), background var(--t-fast);
+}
+.user-header a:hover{transform:translateY(-2px); background:rgba(255,255,255,.3)}
+.user-header a.logout{background:linear-gradient(135deg,var(--danger),#dc2626); border-color:transparent}
+
+/* ========== Buttons ========== */
+.btn,button[type="button"],button[type="submit"]{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  padding:.75rem 1.25rem; border:none; border-radius:12px; cursor:pointer;
+  font-weight:700; font-size:.9rem; text-transform:uppercase; letter-spacing:.03em;
+  transition:transform var(--t-fast), box-shadow var(--t-fast); position:relative; overflow:hidden; color:#fff;
+}
+.btn::after{
+  content:""; position:absolute; left:50%; top:50%; width:0; height:0; border-radius:50%;
+  background:rgba(255,255,255,.45); transform:translate(-50%,-50%); transition:width .6s,height .6s;
+}
+.btn:active::after{width:320px;height:320px}
+.btn-primary,button[type="submit"]{background:linear-gradient(135deg,var(--primary),var(--accent)); box-shadow:0 8px 18px rgba(var(--primary-rgb),.28),0 4px 12px rgba(var(--accent-rgb),.18)}
+.btn-secondary{background:linear-gradient(135deg,var(--secondary),var(--secondary-dark))}
+.btn-success{background:linear-gradient(135deg,var(--accent),var(--accent-dark))}
+.btn-warning{background:linear-gradient(135deg,var(--warning),#d97706)}
+.btn-danger{background:linear-gradient(135deg,var(--danger),#dc2626)}
+.btn-outline{background:transparent; color:var(--primary); border:2px solid var(--primary); box-shadow:none}
+.btn:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(0,0,0,.12)}
+.btn-outline:hover{background:var(--primary); color:#fff}
+
+/* ========== Forms ========== */
+.form-group{margin-bottom:1.2rem}
+label{display:block; margin:.25rem 0 .5rem; font-weight:700; font-size:.85rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.03em}
+input[type="text"],input[type="email"],input[type="password"],input[type="number"],input[type="date"],select,textarea{
+  width:100%; padding:.8rem 1rem; border:2px solid var(--border); border-radius:12px; background:var(--bg-primary);
+  color:var(--text-primary); transition:border var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
+}
+input:focus,select:focus,textarea:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(var(--primary-rgb),.12); transform:translateY(-1px)}
+select{appearance:none; background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%236b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'); background-repeat:no-repeat; background-position:right .75rem center; padding-right:2.25rem}
+
+/* ========== Tables & Badges ========== */
+table{width:100%; border-collapse:separate; border-spacing:0; background:var(--bg-primary); border-radius:16px; overflow:hidden; box-shadow:var(--shadow)}
+thead{background:linear-gradient(135deg,var(--primary),var(--accent))}
+th{color:#fff; text-align:left; padding:1rem; font-weight:700; font-size:.85rem; text-transform:uppercase; letter-spacing:.03em}
+td{padding:1rem; border-top:1px solid var(--border)}
+tbody tr{transition:transform var(--t-fast), background var(--t-fast)}
+tbody tr:hover{background:linear-gradient(90deg,color-mix(in oklab,var(--primary) 6%,transparent),color-mix(in oklab,var(--accent) 6%,transparent)); transform:scale(1.01)}
+
+.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.25rem .6rem;border-radius:999px;font-weight:700;font-size:.72rem;letter-spacing:.03em;text-transform:uppercase}
+.badge-primary{background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff}
+.badge-success{background:linear-gradient(135deg,var(--success),#059669);color:#fff}
+.badge-warning{background:linear-gradient(135deg,var(--warning),#d97706);color:#fff}
+.badge-danger{background:linear-gradient(135deg,var(--danger),#dc2626);color:#fff}
+
+/* ========== Question UI ========== */
+.question{
+  background:var(--bg-secondary); border-left:4px solid var(--primary);
+  border-radius:14px; padding:1.25rem; margin-bottom:1rem; transition:transform var(--t-fast), box-shadow var(--t-fast);
+}
+.question:hover{transform:translateX(4px); box-shadow:var(--shadow)}
+.question p{margin:.5rem 0; line-height:1.8}
+.options{margin:.75rem 0 .25rem 1rem}
+.options label{
+  display:flex; align-items:center; gap:.6rem; padding:.6rem .75rem; margin:.35rem 0; border:2px solid transparent; border-radius:10px;
+  background:var(--bg-primary); cursor:pointer; transition:transform var(--t-fast), border var(--t-fast), background var(--t-fast);
+}
+.options label:hover{border-color:var(--accent); transform:translateX(4px); background:var(--bg-tertiary)}
+.options input[type="radio"]{width:20px;height:20px;accent-color:var(--primary)}
+.answerKey{margin-top:.75rem; padding:.6rem .75rem; border-left:4px solid var(--success); border-radius:10px; background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(16,185,129,.06)); color:var(--success); font-weight:700}
+
+/* ========== Alerts ========== */
+.alert{display:flex;align-items:center;gap:.6rem;padding:1rem 1.25rem;border-radius:14px;margin:1rem 0;animation:fadeIn var(--t)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.alert-success{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(16,185,129,.06)); border-left:4px solid var(--success); color:var(--success)}
+.alert-error{background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(239,68,68,.06)); border-left:4px solid var(--danger); color:var(--danger)}
+.alert-info{background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(59,130,246,.06)); border-left:4px solid var(--info); color:var(--info)}
+
+/* ========== Sidebar (admin) ========== */
+.sidebar{position:fixed;left:0;top:0;width:280px;height:100vh;color:#fff;background:linear-gradient(180deg,var(--primary),var(--primary-dark));padding:2rem 1rem;overflow-y:auto;z-index:20;box-shadow:var(--shadow-2xl)}
+.sidebar-header{padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.15);margin-bottom:1.5rem;text-align:center}
+.sidebar-header h2{color:#fff}
+.sidebar-menu a{display:flex;gap:.6rem;align-items:center;color:rgba(255,255,255,.85);padding:.75rem 1rem;border-radius:10px;text-decoration:none;transition:transform var(--t-fast), background var(--t-fast);font-weight:600}
+.sidebar-menu a:hover{background:rgba(255,255,255,.12);transform:translateX(4px)}
+.sidebar-menu a.active{background:rgba(255,255,255,.22);border-left:4px solid #fff}
+.main-content{margin-left:280px;padding:2rem}
+@media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform var(--t)} .sidebar.open{transform:translateX(0)} .main-content{margin-left:0}}
+
+/* ========== Stats Cards ========== */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin:1.25rem 0}
+.stat-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:16px;padding:1.25rem;backdrop-filter:blur(var(--backdrop-blur));box-shadow:var(--glass-shadow);position:relative;overflow:hidden;transition:transform var(--t), box-shadow var(--t)}
+.stat-card::before{content:"";position:absolute;left:0;top:0;width:100%;height:4px;background:linear-gradient(90deg,var(--primary),var(--secondary))}
+.stat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-2xl)}
+.stat-card h3{font-size:.8rem;letter-spacing:.03em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:.35rem}
+.stat-card .value{font-size:2rem;font-weight:800;color:var(--primary);line-height:1}
+.stat-card .sub-value{color:var(--text-muted);font-size:.9rem;margin-top:.35rem}
+
+/* ========== Utilities ========== */
+.text-center{text-align:center}.text-right{text-align:right}
+.text-muted{color:var(--text-muted)} .text-primary{color:var(--primary)}
+.mt-2{margin-top:.5rem}.mt-3{margin-top:1rem}.mt-4{margin-top:1.5rem}
+.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:1rem}.mb-4{margin-bottom:1.5rem}
+.hidden{display:none}.w-full{width:100%}
+
+/* Custom scrollbar */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--bg-secondary);border-radius:999px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--primary),var(--secondary));border:2px solid var(--bg-secondary);border-radius:999px}
+
+/* ========== Responsive tweaks ========== */
+@media (max-width:768px){
+  h1{font-size:1.6rem}
+  .user-header{flex-direction:column;text-align:center}
+  table{font-size:.9rem}
+}
+
+/* ========== PRINT: Questions Only (ข้อความล้วน) ========== */
+/* ใส่เนื้อหาสำหรับพิมพ์ไว้ใน <div id="printArea"> ... </div> */
+@media print{
+  /* A4 margins: หน้าแรกชิดบน, หน้าถัดไปปกติ */
+  @page{size:A4; margin:12mm 12mm 10mm 12mm}
+  @page:first{margin:2mm 12mm 8mm 12mm}
+
+  /* Screen elements off */
+  body{background:#fff !important}
+  body::before, body::after, .sidebar, .user-header, .buttons, .btn, .alert, .form-card, #configForm{display:none !important}
+
+  /* คุมฟอนต์/ขนาดสำหรับข้อสอบ */
+  html,body{
+    margin:0 !important;
+    font-family:"Angsana New","TH Sarabun New","Tahoma",sans-serif !important;
+    font-size:16pt !important; line-height:1.22 !important; color:#000 !important;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+
+  /* ซ่อนทุกอย่างก่อน แล้วโชว์เฉพาะพื้นที่พิมพ์ */
+  body *{visibility:hidden !important}
+  #printArea, #printArea *{visibility:visible !important}
+
+  /* ลบเงา/กรอบ/ระยะขอบ */
+  #printArea, .container, .card{margin:0 !important; padding:0 !important; border:0 !important; box-shadow:none !important; background:#fff !important}
+
+  /* ส่วนหัวกระดาษ */
+  .print-header{display:block !important; margin:0 0 6pt 0 !important; padding:0 !important; border:0 !important; font-weight:normal !important}
+
+  /* ข้อสอบข้อความล้วน */
+  .question{
+    page-break-inside:avoid; break-inside:avoid;
+    margin:0 0 8pt 0 !important; padding:0 !important; border:0 !important; background:transparent !important; box-shadow:none !important;
+  }
+  .question::before{display:none !important}
+  .question p{margin:0 0 4pt 0 !important}
+
+  .options{margin:0 0 0 14pt !important}
+  .options label{display:block !important; margin:0 0 2pt 0 !important; padding:0 !important; border:0 !important; background:none !important}
+  .options input[type="radio"]{display:none !important}
+
+  .answerKey, .loading{display:none !important}
+  .page-break{page-break-after:always; break-after:page}
+}
+
+/* === Auth Forms: center + not full width === */
+.login-container,
+.register-container{
+  width:100%;
+  max-width:560px;            /* ความกว้างการ์ด */
+  margin:40px auto;           /* จัดกึ่งกลาง */
+}
+
+.login-form,
+.register-form{
+  display:flex;
+  flex-direction:column;
+  align-items:center;         /* จัดกึ่งกลางแนวนอนของทุกฟิลด์ */
+  gap:14px;
+}
+
+/* ให้ label และช่องกรอกกว้างพอดี ไม่เต็มหน้า */
+.login-form label,
+.register-form label,
+.login-form input[type="text"],
+.login-form input[type="password"],
+.register-form input[type="text"],
+.register-form input[type="password"],
+.register-form input[type="email"],
+.register-form input[type="number"],
+.register-form select {
+  width:100%;
+  max-width:520px;            /* ความกว้างของช่องกรอก */
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* ปุ่มให้กว้างพอดีและอยู่กลาง */
+.login-form .btn,
+.register-form .btn,
+.login-form button[type="submit"],
+.register-form button[type="submit"]{
+  width:100%;
+  max-width:240px;
+  margin:10px auto 0;
+}
+
+/* คำอธิบาย/ลิงก์ด้านล่างจัดกึ่งกลาง */
+.login-form .form-footer,
+.register-form .form-footer,
+.login-form .quick-login,
+.register-form .quick-login{
+  width:100%;
+  max-width:520px;
+  margin-left:auto;
+  margin-right:auto;
+  text-align:center;
+}
+
+/* มือถือให้ยืดหยุ่นขึ้นนิด */
+@media (max-width: 640px){
+  .login-container, .register-container{ margin:20px auto; }
+  .login-form label,
+  .register-form label,
+  .login-form input[type="text"],
+  .login-form input[type="password"],
+  .register-form input[type="text"],
+  .register-form input[type="password"],
+  .register-form input[type="email"],
+  .register-form input[type="number"],
+  .register-form select,
+  .login-form .btn,
+  .register-form .btn{
+    max-width:92%;
+  }
+}
+/* === Auth: uniform field width + left aligned text === */
+.login-container,
+.register-container{
+  max-width: 560px;
+  margin: 32px auto;
+}
+
+.login-form,
+.register-form{
+  display: flex;
+  flex-direction: column;
+  align-items: center;           /* จัดกึ่งกลางทั้งฟอร์ม */
+}
+
+/* กล่องฟิลด์ทุกอันให้กว้างเท่ากัน */
+.login-form .form-group,
+.register-form .form-group{
+  width: 100%;
+  max-width: 520px;              /* ขนาดเดียวกันทุกช่อง */
+  margin: 14px auto;
+}
+
+/* ช่องกรอก/เลือก ให้เต็มความกว้างของ .form-group */
+.login-form .form-group input,
+.login-form .form-group select,
+.register-form .form-group input,
+.register-form .form-group select{
+  width: 100% !important;
+  max-width: 100% !important;
+  text-align: left;              /* ตัวอักษรชิดซ้าย */
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+}
+
+/* ป้าย label และ hint ชิดซ้ายเหมือนกัน */
+.login-form .form-group label,
+.register-form .form-group label,
+.register-form .form-hint{
+  display: block;
+  width: 100%;
+  margin: 6px 0 8px 0;
+  text-align: left;
+}
+
+/* placeholder ให้ชิดซ้ายด้วย */
+.login-form input::placeholder,
+.register-form input::placeholder{
+  text-align: left;
+}
+
+/* ปุ่มส่งฟอร์มกว้างพอดีและอยู่กลาง */
+.login-form .btn,
+.register-form .btn,
+.login-form button[type="submit"],
+.register-form button[type="submit"]{
+  width: 100%;
+  max-width: 240px;
+  margin: 12px auto 0;
+}
+
+/* มือถือ */
+@media (max-width: 640px){
+  .login-form .form-group,
+  .register-form .form-group{ max-width: 92%; }
+}
+
+/* === Auth headers centered === */
+.register-container > h1,
+.register-container > p:first-of-type,
+.login-container > h1,
+.login-container > p:first-of-type{
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ระยะของหัวข้อกับคำโปรยให้สั้นลง */
+.register-container > h1,
+.login-container > h1{ margin-bottom: 6px; }
+
+.register-container > p:first-of-type,
+.login-container > p:first-of-type{
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+/* === Tighten fields spacing & center inputs === */
+.login-form .form-group,
+.register-form .form-group{
+  max-width: 520px;      /* ความกว้างกล่องกรอก */
+  margin: 4px auto;      /* เว้นระยะระหว่างแต่ละบล็อกให้สั้นลง */
+}
+
+.login-form .form-group label,
+.register-form .form-group label{
+  margin: 0 0 4px;       /* ลดระยะ label กับ input */
+  text-align: left;
+}
+
+/* กล่องกรอกให้อยู่กึ่งกลางและเตี้ยลงเล็กน้อย */
+.login-form .form-group input,
+.register-form .form-group input,
+.login-form .form-group select,
+.register-form .form-group select{
+  display: block;
+  width: 100%;
+  max-width: 520px;      /* เท่ากันทุกช่อง */
+  margin: 0 auto;
+  padding: 10px 12px;    /* ลดความสูง */
+}
+
+/* ข้อความช่วยอธิบายใต้ช่องกรอก (ถ้ามี) ให้ชิดขึ้นและชิดซ้าย */
+.login-form .form-hint,
+.register-form .form-hint,
+.login-form small,
+.register-form small{
+  display: block;
+  max-width: 520px;
+  margin: 4px auto 0;
+  text-align: left;
+}
+
+/* ปุ่มให้ชิดขึ้นจากช่องสุดท้าย */
+.login-form .btn,
+.register-form .btn{
+  margin-top: 8px;
+}
+
+/* === MOBILE FIX: center everything on auth pages === */
+@media (max-width: 600px) {
+  /* จัดหัวข้อ “สมัครสมาชิก/เข้าสู่ระบบ” ให้อยู่กึ่งกลางแน่นอน */
+  .login-header,
+  .register-header { text-align: center !important; }
+  .login-header h1, .register-header h1,
+  .login-header p,  .register-header p  {
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* ให้ฟอร์มจัดวางแบบคอลัมน์กึ่งกลาง */
+  .login-form, .register-form {
+    display: grid;
+    justify-items: center;   /* children ตรงกลาง */
+  }
+
+  /* กล่องกรอก/ปุ่มจะไม่เต็มจอ และกึ่งกลางเสมอ */
+  .login-form .form-group,
+  .register-form .form-group,
+  .login-form .btn,
+  .register-form .btn,
+  .login-form .form-footer,
+  .register-form .form-footer,
+  .quick-login {
+    width: min(480px, 92vw);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ช่องกรอกแต่ละช่อง */
+  .login-form input,
+  .register-form input,
+  .login-form select,
+  .register-form select {
+    width: 100%;                 /* กว้างตามกรอบที่จำกัดไว้ด้านบน */
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ลดช่องว่างระหว่างฟิลด์ให้ชิดกันขึ้น */
+  .login-form .form-group,
+  .register-form .form-group { margin: 6px auto; }
+  .login-form .form-group label,
+  .register-form .form-group label { margin: 0 0 4px; text-align: left; }
+
+  /* ข้อความช่วยอธิบายใต้ช่องกรอก */
+  .login-form .form-hint, .register-form .form-hint,
+  .login-form small,     .register-form small {
+    margin: 4px auto 0;
+    width: min(480px, 92vw);
+    text-align: left;
+  }
+}
+
+/* Modal backdrop/control */
+.modal-backdrop { 
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(4px);
+  display: none;                 /* ซ่อนค่าเริ่มต้น */
+  align-items: center; justify-content: center;
+  padding: 16px; z-index: 1000;
+}
+.modal-backdrop.show {           /* เปิดด้วยคลาส .show */
+  display: flex;
+}
+.modal {                         /* กล่องด้านในของโมดอล */
+  width: min(900px, 96vw);
+  max-height: 90vh; overflow: auto;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-2xl);
+}
+.modal .head {
+  display:flex; align-items:center; justify-content:space-between;
+}
+
+/* โมดอลควบคุมด้วย .show เท่านั้น */
+.modal-backdrop{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 16px; z-index: 1000;
+}
+.modal-backdrop.show{ display: flex; }
+
+.modal{
+  width: min(900px, 96vw);
+  max-height: 90vh; overflow: auto;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-2xl);
+}
+
+/* ปุ่มปิดให้คลิกได้ชัวร์ */
+.close-btn{
+  appearance: none; background: transparent; border: 0;
+  cursor: pointer; color: var(--text-primary);
+  width: 2rem; height: 2rem; display: inline-flex;
+  align-items: center; justify-content: center; font-size: 1.4rem;
+}
+.close-btn:hover{ transform: rotate(90deg); }
+
+/* ตอนเปิดโมดอล ล็อคสกอลล์พื้นหลัง (เสริม) */
+.lock-scroll{ overflow: hidden; }
+
